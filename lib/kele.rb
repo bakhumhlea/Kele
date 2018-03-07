@@ -8,7 +8,7 @@ class Kele
     
     def initialize(email, password)
         @email = email
-        
+        @my_mentor_id = nil
         response = self.class.post("/sessions", body: { email: @email, password: password })
         
         if response["auth_token"].nil?
@@ -23,7 +23,29 @@ class Kele
     def get_me
         response = self.class.get('/users/me', headers: {"authorization" => @auth_token })
         
-        JSON.parse(response.body)
+        me = JSON.parse(response.body)
+        puts "Name: #{me["first_name"]} #{me["last_name"]}\nBiography: #{me["bio"]}"
+        puts "My Mentor Id: #{me["current_enrollment"]["mentor_id"]}"
+        @my_mentor_id = me["current_enrollment"]["mentor_id"]
+    end
+    
+    def get_mentor_availability(mentor_id)
+        response = self.class.get('/mentors/'+mentor_id.to_s+'/student_availability', headers: {"authorization" => @auth_token })
+        
+        availability = JSON.parse(response.body)
+        availability.each {|a| puts "Week Day: #{a["week_day"]} | From: #{a["starts_at"]} to #{a["ends_at"]} | Status: #{a["booked"] == true ? "Booked" : "Available" }" }
+    end
+    
+    def check_availability(week_num)
+        response = self.class.get("/mentors/#{@my_mentor_id}/student_availability", headers: {"authorization" => @auth_token})
+        
+        availability = JSON.parse(response.body)
+        result = []
+        availability.each do |a|
+            next if a["week_day"] != week_num
+            result << a
+        end
+        puts "#{result}"
     end
     
     def self.greet(lang='en')
