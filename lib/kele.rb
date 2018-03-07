@@ -52,6 +52,30 @@ class Kele
         puts "#{result}"
     end
     
+    def get_message(page=nil)
+        if page.nil?
+            response = self.class.get("/message_threads", headers: { "authorization" => @auth_token})
+        else
+            response = self.class.get("/message_threads", headers: { "authorization" => @auth_token}, body: { "page":page })
+        end
+        
+        JSON.parse(response.body)
+    end
+    
+    def create_message(recipient_id, message, subject = nil, thread_token = nil)
+        response = self.class.post(
+            '/messages',
+            body: {
+                "sender": @email,
+                "recipient_id": recipient_id,
+                "token": thread_token,
+                "subject": subject,
+                "stripped-text": message
+            },
+            headers: { "authorization" => @auth_token }
+        )
+    end
+    
     def self.greet(lang='en')
         hi = ''
         case lang
