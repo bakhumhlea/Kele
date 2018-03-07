@@ -76,6 +76,20 @@ class Kele
         )
     end
     
+    def create_submission(checkpoint_id, assignment_branch = nil, assignment_commit_link = nil, comment = nil)
+        response = self.class.post(
+            '/checkpoint_submissions',
+            body: {
+                "checkpoint_id": checkpoint_id,
+                "enrollment_id": self.get_me["current_enrollment"]["id"],
+                "assignment_branch": assignment_branch,
+                "assignment_commit_link": assignment_commit_link,
+                "comment": comment
+            },
+            headers: { "authorization" => @auth_token }
+        )
+    end
+    
     def self.greet(lang='en')
         hi = ''
         case lang
